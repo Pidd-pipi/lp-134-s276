@@ -105,10 +105,17 @@ export const userAPI = {
 
 export const crisisAPI = {
   getHotline: () => api.get('/crisis/hotline'),
-  getAlerts: (params?: { page?: number; limit?: number; isResolved?: boolean }) =>
+  getAlerts: (params?: { page?: number; limit?: number; isResolved?: boolean; status?: string }) =>
     api.get('/crisis/alerts', { params }),
   getAlert: (id: string) => api.get(`/crisis/alerts/${id}`),
-  resolveAlert: (id: string) => api.post(`/crisis/alerts/${id}/resolve`)
+  claimAlert: (id: string, data?: { note?: string }) =>
+    api.post(`/crisis/alerts/${id}/claim`, data),
+  closeAlert: (id: string, data: { note: string }) =>
+    api.post(`/crisis/alerts/${id}/close`, data),
+  falseAlarmAlert: (id: string, data?: { note?: string }) =>
+    api.post(`/crisis/alerts/${id}/false-alarm`, data),
+  resolveAlert: (id: string, data: { note: string }) =>
+    api.post(`/crisis/alerts/${id}/resolve`, data)
 };
 
 export default api;
