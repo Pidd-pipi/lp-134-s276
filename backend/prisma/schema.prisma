@@ -45,6 +45,13 @@ enum CheckInStatus {
   MISSED
 }
 
+enum CrisisAlertStatus {
+  PENDING
+  FOLLOWING
+  CLOSED
+  FALSE_ALARM
+}
+
 model User {
   id              String          @id @default(uuid())
   username        String          @unique
@@ -68,6 +75,7 @@ model User {
   favorites       Favorite[]
   sentMessages    GroupMessage[]
   crisisAlerts    CrisisAlert[]
+  claimedCrisisAlerts CrisisAlert[] @relation("ClaimedCrisisAlerts")
   
   @@map("users")
 }
@@ -299,19 +307,25 @@ model Favorite {
 }
 
 model CrisisAlert {
-  id              String          @id @default(uuid())
-  userId          String
-  postId          String?
-  keyword         String
-  content         String
-  isResolved      Boolean         @default(false)
-  resolvedBy      String?
-  resolvedAt      DateTime?
-  createdAt       DateTime        @default(now())
-  
-  user            User            @relation(fields: [userId], references: [id])
-  post            Post?           @relation(fields: [postId], references: [id])
-  
+  id               String            @id @default(uuid())
+  userId           String
+  postId           String?
+  keyword          String
+  content          String
+  status           CrisisAlertStatus @default(PENDING)
+  isResolved       Boolean           @default(false)
+  claimedBy        String?
+  claimedAt        DateTime?
+  interventionNote String?
+  resolvedBy       String?
+  resolvedAt       DateTime?
+  resolutionNote   String?
+  createdAt        DateTime          @default(now())
+
+  user             User              @relation(fields: [userId], references: [id])
+  post             Post?             @relation(fields: [postId], references: [id])
+  claimedByUser    User?             @relation("ClaimedCrisisAlerts", fields: [claimedBy], references: [id])
+
   @@map("crisis_alerts")
 }
 

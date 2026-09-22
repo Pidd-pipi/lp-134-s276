@@ -323,23 +323,41 @@ def test_crisis_alert_flow(context):
                 
                 if alerts:
                     alert_id = alerts[0]["id"]
-                    
+
                     # 获取预警详情
                     response = requests.get(f"{BASE_URL}/crisis/alerts/{alert_id}", headers=admin_headers)
                     if response.status_code == 200:
                         alert_detail = response.json()
-                        print_result("获取危机预警详情", True, 
+                        print_result("获取危机预警详情", True,
                                     f"预警ID: {alert_id}, 关键词: {alert_detail.get('keyword')}")
                     else:
                         print_result("获取危机预警详情", False, f"状态码: {response.status_code}")
-                    
-                    # 处理预警
-                    response = requests.post(f"{BASE_URL}/crisis/alerts/{alert_id}/resolve", 
+
+                    # 领取预警（标记跟进中并填写干预备注）
+                    response = requests.post(f"{BASE_URL}/crisis/alerts/{alert_id}/claim",
+                                           json={"note": "已电话联系用户，情绪暂时稳定"},
                                            headers=admin_headers)
                     if response.status_code == 200:
-                        print_result("处理危机预警", True)
+                        print_result("领取危机预警（跟进中）", True)
                     else:
-                        print_result("处理危机预警", False, f"状态码: {response.status_code}")
+                        print_result("领取危机预警（跟进中）", False, f"状态码: {response.status_code}")
+
+                    # 重复领取应冲突（同一预警只允许一个管理员领取）
+                    response = requests.post(f"{BASE_URL}/crisis/alerts/{alert_id}/claim",
+                                           json={"note": "重复领取"}, headers=admin_headers)
+                    if response.status_code == 409:
+                        print_result("重复领取被拒绝", True)
+                    else:
+                        print_result("重复领取被拒绝", False, f"状态码: {response.status_code}")
+
+                    # 关闭预警（关闭说明必填）
+                    response = requests.post(f"{BASE_URL}/crisis/alerts/{alert_id}/resolve",
+                                           json={"note": "已安排咨询师跟进，用户状态稳定"},
+                                           headers=admin_headers)
+                    if response.status_code == 200:
+                        print_result("关闭危机预警", True)
+                    else:
+                        print_result("关闭危机预警", False, f"状态码: {response.status_code}")
             else:
                 print_result("管理员获取危机预警列表", False, f"状态码: {response.status_code}")
         else:

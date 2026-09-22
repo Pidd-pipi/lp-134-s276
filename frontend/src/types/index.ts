@@ -135,13 +135,23 @@ export interface Notification {
   createdAt: string;
 }
 
+export type CrisisAlertStatus = 'PENDING' | 'FOLLOWING' | 'CLOSED' | 'FALSE_ALARM';
+
 export interface CrisisAlert {
   id: string;
   userId: string;
   postId: string | null;
   keyword: string;
   content: string;
+  status: CrisisAlertStatus;
   isResolved: boolean;
+  claimedBy: string | null;
+  claimedAt: string | null;
+  interventionNote: string | null;
+  resolvedBy: string | null;
+  resolvedAt: string | null;
+  resolutionNote: string | null;
   createdAt: string;
   user: User;
+  claimedByUser?: Pick<User, 'id' | 'username' | 'nickname'> | null;
 }
